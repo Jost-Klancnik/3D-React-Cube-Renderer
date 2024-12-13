@@ -8,7 +8,7 @@ I don't know, I was bored and wanted to see if I could do it.
 Unfinished, I'm still working on it. It has some rendering issues where planes don't display properly, but I am working on fixing that soon.
 ## Plans
 - [x] Render a 3D cube
-- [ ] Fix rendering issues
+- [x] Fix rendering issues
 - [ ] Add ability to rotate cube
 - [ ] Add ability to change cube color
 - [ ] Add ability to change cube size
