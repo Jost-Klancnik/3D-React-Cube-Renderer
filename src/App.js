@@ -71,26 +71,36 @@ function App() {
     const [screenPosition, setScreenPosition] = useState([0, 0, 500]);
     const [perspectivePoint, setPerspectivePoint] = useState([0, 0, 0]);
     
-    const [cubePoints, setCubePoints] = useState([60, 60, 100]);
+    const [cubePoints, setCubePoints] = useState([40, 40, 100]);
     let size = 100;
     
     const [pts3D, setPts3D] = useState([
-        [cubePoints[0]-size/2, cubePoints[1]-size/2, cubePoints[2]-size/2],
-        [cubePoints[0]+size/2, cubePoints[1]-size/2, cubePoints[2]-size/2],
-        [cubePoints[0]+size/2, cubePoints[1]-size/2, cubePoints[2]+size/2],
-        [cubePoints[0]-size/2, cubePoints[1]-size/2, cubePoints[2]+size/2],
-        [cubePoints[0]-size/2, cubePoints[1]+size/2, cubePoints[2]-size/2],
-        [cubePoints[0]+size/2, cubePoints[1]+size/2, cubePoints[2]-size/2],
-        [cubePoints[0]+size/2, cubePoints[1]+size/2, cubePoints[2]+size/2],
-        [cubePoints[0]-size/2, cubePoints[1]+size/2, cubePoints[2]+size/2]]);
+    /*A-0*/    [cubePoints[0]-size/2, cubePoints[1]-size/2, cubePoints[2]-size/2],
+    /*B-1*/    [cubePoints[0]+size/2, cubePoints[1]-size/2, cubePoints[2]-size/2],
+    /*C-2*/    [cubePoints[0]+size/2, cubePoints[1]-size/2, cubePoints[2]+size/2],
+    /*D-3*/    [cubePoints[0]-size/2, cubePoints[1]-size/2, cubePoints[2]+size/2],
+    /*E-4*/    [cubePoints[0]-size/2, cubePoints[1]+size/2, cubePoints[2]-size/2],
+    /*F-5*/    [cubePoints[0]+size/2, cubePoints[1]+size/2, cubePoints[2]-size/2],
+    /*G-6*/    [cubePoints[0]+size/2, cubePoints[1]+size/2, cubePoints[2]+size/2],
+    /*H-7*/    [cubePoints[0]-size/2, cubePoints[1]+size/2, cubePoints[2]+size/2]]);
     
+    // counterclockwise orientation of plains
+    // const [planes, setPlanes] = useState([
+    //     [pts3D[0], pts3D[1], pts3D[2], pts3D[3]],
+    //     [pts3D[4], pts3D[7], pts3D[6], pts3D[5]],
+    //     [pts3D[0], pts3D[4], pts3D[5], pts3D[1]],
+    //     [pts3D[2], pts3D[6], pts3D[7], pts3D[3]],
+    //     [pts3D[1], pts3D[5], pts3D[6], pts3D[2]],
+    //     [pts3D[0], pts3D[3], pts3D[7], pts3D[4]]]);
+    
+    // clockwise orientation of plains
     const [planes, setPlanes] = useState([
-        [pts3D[0], pts3D[1], pts3D[2], pts3D[3]],
+        [pts3D[0], pts3D[3], pts3D[2], pts3D[1]],
         [pts3D[4], pts3D[5], pts3D[6], pts3D[7]],
         [pts3D[0], pts3D[1], pts3D[5], pts3D[4]],
         [pts3D[2], pts3D[3], pts3D[7], pts3D[6]],
         [pts3D[1], pts3D[2], pts3D[6], pts3D[5]],
-        [pts3D[0], pts3D[3], pts3D[7], pts3D[4]]]);
+        [pts3D[0], pts3D[4], pts3D[7], pts3D[3]]]);
     
     const [colors, setColors] = useState([
         'red',
@@ -100,42 +110,51 @@ function App() {
         'orange',
         'purple']);
     
-    function findDistance(point1, point2) {
-        return Math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2 + (point1[2] - point2[2])**2);
-    }
-
-    function findMaxDistance(points, perspectivePoint) {
-        let maxDistance = 0;
-        for (let i = 0; i < points.length; i++) {
-            let distance = findDistance(points[i], perspectivePoint);
-            if (distance > maxDistance) {
-                maxDistance = distance;
-            }
-        }
-        return maxDistance;
+    function isNormalPointingAway(planePoint1, planePoint2, planePoint3, perspectivePoint) {
+        // Compute two vectors lying on the plane
+        const v1 = [
+            planePoint2[0] - planePoint1[0],
+            planePoint2[1] - planePoint1[1],
+            planePoint2[2] - planePoint1[2]
+        ];
+        
+        const v2 = [
+            planePoint3[0] - planePoint1[0],
+            planePoint3[1] - planePoint1[1],
+            planePoint3[2] - planePoint1[2]
+        ];
+        
+        // Compute the cross product v1 × v2 to get the normal vector
+        const normal = [
+            v1[1] * v2[2] - v1[2] * v2[1],
+            v1[2] * v2[0] - v1[0] * v2[2],
+            v1[0] * v2[1] - v1[1] * v2[0]
+        ];
+        
+        // Compute the vector from planePoint1 to the perspectivePoint
+        const toPerspective = [
+            perspectivePoint[0] - planePoint1[0],
+            perspectivePoint[1] - planePoint1[1],
+            perspectivePoint[2] - planePoint1[2]
+        ];
+        
+        // Compute the dot product of the normal vector and the toPerspective vector
+        const dotProduct =
+            normal[0] * toPerspective[0] +
+            normal[1] * toPerspective[1] +
+            normal[2] * toPerspective[2];
+        
+        // If the dot product is positive, the normal vector is pointing toward the perspectivePoint.
+        // Return false in this case, otherwise return true.
+        return dotProduct <= 0;
     }
     
     function constructPlanesHTML(planes, colors, screenPosition, perspectivePoint, cubePoints, cubeSize) {
         let result = [];
-        let maxDistance = findMaxDistance(pts3D, perspectivePoint);
         
         for (let plane of planes) {
-            let display;
+            let display = isNormalPointingAway(plane[0], plane[1], plane[2], perspectivePoint);
             
-            let planeMaxDistance = findMaxDistance(plane, perspectivePoint);
-            
-            if (((cubePoints[0] - cubeSize/2 < perspectivePoint[0]) && (cubePoints[0] + cubeSize/2 > perspectivePoint[0])) || ((cubePoints[1] - cubeSize/2 < perspectivePoint[1]) && (cubePoints[1] + cubeSize/2 > perspectivePoint[1]))) {
-                display = false;
-                //TODO If the pane contains the point with the largest Z value it should be displayed
-                
-                
-            }
-            else if (planeMaxDistance === maxDistance) {
-                display = false;
-            }
-            else {
-                display = true;
-            }
             
             result.push({
                 point1: plane[0],
