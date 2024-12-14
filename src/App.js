@@ -2,31 +2,47 @@ import React from 'react';
 import {useState, useEffect, useCallback } from 'react';
 import './App.css';
 
-function CubePlane({point1, point2, point3, point4, color, display, screenPosition}) {
+function CubePlane({ point1, point2, point3, point4, color, display, screenPosition }) {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
     
+    const translate3DPointTo2D = useCallback((point) => {
+        const x = (width / 2) + ((point[0] * screenPosition[2]) / point[2]);
+        const y = (height / 2) + ((point[1] * screenPosition[2]) / point[2]);
+        return [x, y];
+    }, [width, height, screenPosition]);
     
-    let width = window.innerWidth;
-    let height = window.innerHeight;
+    const translate3DPointsTo2D = useCallback((points3D) => {
+        return points3D.map(point => translate3DPointTo2D(point));
+    }, [translate3DPointTo2D]);
     
-    const [points3D, setPoints3D] = useState(!display ? [] : [point1, point2, point3, point4]);
-    const [points2D, setPoints2D] = useState(!display ? [] : translate3DPointsTo2D(points3D));
-    const [points2DString, setPoints2DString] = useState(!display ? '' : refactorPointsToString(points2D));
+    const refactorPointsToString = useCallback((points2D) => {
+        return points2D.map(point => `${point[0]}px ${point[1]}px`).join(', ');
+    }, []);
+    
+    const [points3D, setPoints3D] = useState([]);
+    const [points2D, setPoints2D] = useState([]);
+    const [points2DString, setPoints2DString] = useState('');
     
     useEffect(() => {
-        setPoints3D(!display ? [] : [point1, point2, point3, point4]);
-        setPoints2D(!display ? [] : translate3DPointsTo2D(points3D));
-        setPoints2DString(!display ? '' : refactorPointsToString(points2D));
-    }, [ point1, point2, point3, point4, display, points3D, points2D, translate3DPointsTo2D, refactorPointsToString]);
+        if (display) {
+            const newPoints3D = [point1, point2, point3, point4];
+            setPoints3D(newPoints3D);
+            const newPoints2D = translate3DPointsTo2D(newPoints3D);
+            setPoints2D(newPoints2D);
+            setPoints2DString(refactorPointsToString(newPoints2D));
+        } else {
+            setPoints3D([]);
+            setPoints2D([]);
+            setPoints2DString('');
+        }
+    }, [point1, point2, point3, point4, display, translate3DPointsTo2D, refactorPointsToString]);
     
-    // if the display prop is false it will skip everything and return a div with display set to none    
     if (!display) {
-        return (
-            <div className="cube-plane" style={{display: 'none'}}></div>
-        );
+        return <div className="cube-plane" style={{ display: 'none' }}></div>;
     }
     
-    
-    let style = {
+    const style = {
         width: `${width}px`,
         height: `${height}px`,
         backgroundColor: `${color}`,
@@ -34,39 +50,9 @@ function CubePlane({point1, point2, point3, point4, color, display, screenPositi
         position: 'absolute',
         top: '0',
         left: '0'
-    }
+    };
     
-    function translate3DPointTo2D(point) {
-        let x = (width / 2) + ((point[0] * screenPosition[2]) / point[2]);
-        let y = (height / 2) + ((point[1] * screenPosition[2]) / point[2]);
-        return [x, y];
-    }
-    
-    function translate3DPointsTo2D(points3D) {
-        let newPoints2D = [];
-        for (let i = 0; i < points3D.length; i++) {
-            let point = points3D[i];
-            let newPoint = translate3DPointTo2D(point);
-            newPoints2D.push(newPoint);
-        }
-        return newPoints2D;
-    }
-    
-    function refactorPointsToString(points2D) {
-        let pointsString = '';
-        for (let i = 0; i < points2D.length; i++) {
-            pointsString += `${points2D[i][0]}px ${points2D[i][1]}px`;
-            if (i < points2D.length - 1) {
-                pointsString += ', ';
-            }
-        }
-        return pointsString;
-    }
-    
-    
-    return (
-        <div className="cube-plane" style={style}></div>
-    );
+    return <div className="cube-plane" style={style}></div>;
 }
 
 function Slider({ setCoordinate }) {
