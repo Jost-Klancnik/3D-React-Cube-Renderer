@@ -5,7 +5,7 @@ Also fell free to use this code if you find any use for it.
 ## Why even do this?
 I don't know, I was bored and wanted to see if I could do it.
 ## Current State
-Unfinished, I'm still working on it. It has some rendering issues where planes don't display properly, but I am working on fixing that soon.
+Unfinished, I'm still working on it. Cube is now rendering properly and there is a suer interface to change the cube position. Going to add rotations soon.
 ## Plans
 - [x] Render a 3D cube
 - [x] Fix rendering issues
