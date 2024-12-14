@@ -1,5 +1,5 @@
 import React from 'react';
-import {useState} from 'react';
+import {useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 function CubePlane({point1, point2, point3, point4, color, display, screenPosition}) {
@@ -8,12 +8,15 @@ function CubePlane({point1, point2, point3, point4, color, display, screenPositi
     let width = window.innerWidth;
     let height = window.innerHeight;
     
-    // let screenPosition = [0, 0, 500];
+    const [points3D, setPoints3D] = useState(!display ? [] : [point1, point2, point3, point4]);
+    const [points2D, setPoints2D] = useState(!display ? [] : translate3DPointsTo2D(points3D));
+    const [points2DString, setPoints2DString] = useState(!display ? '' : refactorPointsToString(points2D));
     
-    const [points3D, setPoints3D] = useState(!display ? undefined : [point1, point2, point3, point4]);
-    const [points2D, setPoints2D] = useState(!display ? undefined : translate3DPointsTo2D(points3D));
-    const [points2DString, setPoints2DString] = useState(!display ? undefined : refactorPointsToString(points2D));
-    
+    useEffect(() => {
+        setPoints3D(!display ? [] : [point1, point2, point3, point4]);
+        setPoints2D(!display ? [] : translate3DPointsTo2D(points3D));
+        setPoints2DString(!display ? '' : refactorPointsToString(points2D));
+    }, [ point1, point2, point3, point4, display, points3D, points2D, translate3DPointsTo2D, refactorPointsToString]);
     
     // if the display prop is false it will skip everything and return a div with display set to none    
     if (!display) {
@@ -66,23 +69,77 @@ function CubePlane({point1, point2, point3, point4, color, display, screenPositi
     );
 }
 
+function Slider({ setCoordinate }) {
+    
+    // const [value, setValue] = useState(0);
+    
+    function handleChange(event) {
+        setCoordinate(Number(event.target.value));
+    }
+    
+    return (
+        <input className='slider' onChange={e => handleChange(e) }  type="range" min="-500" max="500" step="5" />
+    );
+}
+
+function SliderHolder({ setCoodinateX, setCoodinateY, setCoodinateZ }) {
+    return (
+        <div className="sliderHolder">
+            <div>
+                <label>X:</label>
+                <Slider setCoordinate={setCoodinateX}/>
+            </div>
+            <div>
+                <label>Y:</label>
+                <Slider setCoordinate={setCoodinateY}/>
+            </div>
+            <div>
+                <label>Z:</label>
+                <Slider setCoordinate={setCoodinateZ}/>
+            </div>
+        </div>
+    );
+    
+}
+
 function App() {
     
     const [screenPosition, setScreenPosition] = useState([0, 0, 500]);
     const [perspectivePoint, setPerspectivePoint] = useState([0, 0, 0]);
     
-    const [cubePoints, setCubePoints] = useState([40, 40, 100]);
+    const [cubePointx, setcubePointx] = useState(60);
+    const [cubePointy, setCubePointy] = useState(0);
+    const [cubePointz, setCubePointz] = useState(100);
+    
+    useEffect(() => {
+        setcubePoint([cubePointx, cubePointy, cubePointz]);
+    }, [cubePointx, cubePointy, cubePointz]);
+    
+    const [cubePoint, setcubePoint] = useState([cubePointx, cubePointy, cubePointz]);
     let size = 100;
     
+    useEffect(() => {
+        setPts3D([
+    /*A-0*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
+    /*B-1*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
+    /*C-2*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
+    /*D-3*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
+    /*E-4*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
+    /*F-5*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
+    /*G-6*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]+size/2],
+    /*H-7*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]+size/2]
+        ]);
+    }, [cubePoint, size]);
+    
     const [pts3D, setPts3D] = useState([
-    /*A-0*/    [cubePoints[0]-size/2, cubePoints[1]-size/2, cubePoints[2]-size/2],
-    /*B-1*/    [cubePoints[0]+size/2, cubePoints[1]-size/2, cubePoints[2]-size/2],
-    /*C-2*/    [cubePoints[0]+size/2, cubePoints[1]-size/2, cubePoints[2]+size/2],
-    /*D-3*/    [cubePoints[0]-size/2, cubePoints[1]-size/2, cubePoints[2]+size/2],
-    /*E-4*/    [cubePoints[0]-size/2, cubePoints[1]+size/2, cubePoints[2]-size/2],
-    /*F-5*/    [cubePoints[0]+size/2, cubePoints[1]+size/2, cubePoints[2]-size/2],
-    /*G-6*/    [cubePoints[0]+size/2, cubePoints[1]+size/2, cubePoints[2]+size/2],
-    /*H-7*/    [cubePoints[0]-size/2, cubePoints[1]+size/2, cubePoints[2]+size/2]]);
+    /*A-0*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
+    /*B-1*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
+    /*C-2*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
+    /*D-3*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
+    /*E-4*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
+    /*F-5*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
+    /*G-6*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]+size/2],
+    /*H-7*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]+size/2]]);
     
     // counterclockwise orientation of plains
     // const [planes, setPlanes] = useState([
@@ -92,6 +149,17 @@ function App() {
     //     [pts3D[2], pts3D[6], pts3D[7], pts3D[3]],
     //     [pts3D[1], pts3D[5], pts3D[6], pts3D[2]],
     //     [pts3D[0], pts3D[3], pts3D[7], pts3D[4]]]);
+    
+    useEffect(() => {
+        setPlanes([
+            [pts3D[0], pts3D[3], pts3D[2], pts3D[1]],
+            [pts3D[4], pts3D[5], pts3D[6], pts3D[7]],
+            [pts3D[0], pts3D[1], pts3D[5], pts3D[4]],
+            [pts3D[2], pts3D[3], pts3D[7], pts3D[6]],
+            [pts3D[1], pts3D[2], pts3D[6], pts3D[5]],
+            [pts3D[0], pts3D[4], pts3D[7], pts3D[3]]
+        ]);
+    }, [pts3D]);
     
     // clockwise orientation of plains
     const [planes, setPlanes] = useState([
@@ -149,12 +217,11 @@ function App() {
         return dotProduct <= 0;
     }
     
-    function constructPlanesHTML(planes, colors, screenPosition, perspectivePoint, cubePoints, cubeSize) {
+    const constructPlanesHTML = useCallback((planes, colors, screenPosition, perspectivePoint) => {
         let result = [];
         
         for (let plane of planes) {
             let display = isNormalPointingAway(plane[0], plane[1], plane[2], perspectivePoint);
-            
             
             result.push({
                 point1: plane[0],
@@ -180,11 +247,23 @@ function App() {
         );
         
         return (returnResult);
-    }
+    }, []);
+    
+    const [constructedHTML, setConstructedHTML] = useState(constructPlanesHTML(planes, colors, screenPosition, perspectivePoint));
+    
+    useEffect(() => {
+        setConstructedHTML(constructPlanesHTML(planes, colors, screenPosition, perspectivePoint));
+    }, [planes, colors, screenPosition, perspectivePoint, constructPlanesHTML]);
     
     return (
         <div className="App">
-            {constructPlanesHTML(planes, colors, screenPosition, perspectivePoint, cubePoints, size)}
+            
+            {constructedHTML.map((item) => (
+                <div className="planeHolder">
+                    {item}
+                </div>
+            ))}
+            <SliderHolder setCoodinateX={setcubePointx} setCoodinateY={setCubePointy} setCoodinateZ={setCubePointz} />
         </div>
     );
 }
