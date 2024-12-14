@@ -12,4 +12,4 @@ Unfinished, I'm still working on it. It has some rendering issues where planes d
 - [ ] Add ability to rotate cube
 - [ ] Add ability to change cube color
 - [ ] Add ability to change cube size
-- [ ] Add ability to change cube position
+- [x] Add ability to change cube position
