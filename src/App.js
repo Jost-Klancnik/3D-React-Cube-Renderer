@@ -1,5 +1,4 @@
-import React from 'react';
-import {useState, useEffect, useCallback } from 'react';
+import React, {useCallback, useEffect, useState, useMemo, use} from 'react';
 import './App.css';
 
 function CubePlane({ point1, point2, point3, point4, color, display, screenPosition }) {
@@ -61,27 +60,46 @@ function Slider({ setCoordinate }) {
     
     function handleChange(event) {
         setCoordinate(Number(event.target.value));
+        console.log(event.target.value);
     }
     
     return (
-        <input className='slider' onChange={e => handleChange(e) }  type="range" min="-500" max="500" step="5" />
+        <input className='slider' onChange={e => handleChange(e) }  type="range" min="-2000" max="2000" step="1" />
     );
 }
 
-function SliderHolder({ setCoodinateX, setCoodinateY, setCoodinateZ }) {
+function SliderHolder({ x, y, z, setCoodinateX, setCoodinateY, setCoodinateZ, angleX, setAngleX, angleY, setAngleY, angleZ, setAngleZ }) {
     return (
         <div className="sliderHolder">
             <div>
                 <label>X:</label>
                 <Slider setCoordinate={setCoodinateX}/>
+                <span>{x}</span>
             </div>
             <div>
                 <label>Y:</label>
                 <Slider setCoordinate={setCoodinateY}/>
+                <span>{y}</span>
             </div>
             <div>
                 <label>Z:</label>
                 <Slider setCoordinate={setCoodinateZ}/>
+                <span>{z}</span>
+            </div>
+            <div>
+                <label>AngleX:</label>
+                <Slider setCoordinate={setAngleX}/>
+                <span>{angleX}</span>
+            </div>
+            <div>
+                <label>AngleY:</label>
+                <Slider setCoordinate={setAngleY}/>
+                <span>{angleY}</span>
+            </div>
+            <div>
+                <label>AngleZ:</label>
+                <Slider setCoordinate={setAngleZ}/>
+                <span>{angleZ}</span>
             </div>
         </div>
     );
@@ -90,42 +108,65 @@ function SliderHolder({ setCoodinateX, setCoodinateY, setCoodinateZ }) {
 
 function App() {
     
-    const [screenPosition, setScreenPosition] = useState([0, 0, 500]);
+    const [screenPosition, setScreenPosition] = useState([0, 0, 2000]);
     const [perspectivePoint, setPerspectivePoint] = useState([0, 0, 0]);
     
-    const [cubePointx, setcubePointx] = useState(60);
-    const [cubePointy, setCubePointy] = useState(0);
-    const [cubePointz, setCubePointz] = useState(100);
+    const [angleX, setAngleX] = useState(0);
+    const [originalAngleX, setOriginalAngleX] = useState(0);
     
-    useEffect(() => {
-        setcubePoint([cubePointx, cubePointy, cubePointz]);
-    }, [cubePointx, cubePointy, cubePointz]);
+    const [angleY, setAngleY] = useState(0);
+    const [originalAngleY, setOriginalAngleY] = useState(0);
     
-    const [cubePoint, setcubePoint] = useState([cubePointx, cubePointy, cubePointz]);
+    const [angleZ, setAngleZ] = useState(0);
+    const [originalAngleZ, setOriginalAngleZ] = useState(0);
+    
+    const [cubePointX, setCubePointX] = useState(0);
+    const [cubePointY, setCubePointY] = useState(0);
+    const [cubePointZ, setCubePointZ] = useState(400);
+    
+    // useEffect(() => {
+    //     setCubePoint([cubePointX, cubePointY, cubePointZ]);
+    // }, [cubePointX, cubePointY, cubePointZ]);
+    
+    const [cubePoint, setCubePoint] = useState([cubePointX, cubePointY, cubePointZ]);
     let size = 100;
     
-    useEffect(() => {
-        setPts3D([
-    /*A-0*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
-    /*B-1*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
-    /*C-2*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
-    /*D-3*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
-    /*E-4*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
-    /*F-5*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
-    /*G-6*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]+size/2],
-    /*H-7*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]+size/2]
-        ]);
-    }, [cubePoint, size]);
-    
     const [pts3D, setPts3D] = useState([
-    /*A-0*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
-    /*B-1*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
-    /*C-2*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
-    /*D-3*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
-    /*E-4*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
-    /*F-5*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
-    /*G-6*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]+size/2],
-    /*H-7*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]+size/2]]);
+        /*A-0*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
+        /*B-1*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
+        /*C-2*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
+        /*D-3*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
+        /*E-4*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
+        /*F-5*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
+        /*G-6*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]+size/2],
+        /*H-7*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]+size/2]]);
+    
+    useEffect(() => {
+    //     setPts3D([
+    // /*A-0*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
+    // /*B-1*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]-size/2],
+    // /*C-2*/    [cubePoint[0]+size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
+    // /*D-3*/    [cubePoint[0]-size/2, cubePoint[1]-size/2, cubePoint[2]+size/2],
+    // /*E-4*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
+    // /*F-5*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]-size/2],
+    // /*G-6*/    [cubePoint[0]+size/2, cubePoint[1]+size/2, cubePoint[2]+size/2],
+    // /*H-7*/    [cubePoint[0]-size/2, cubePoint[1]+size/2, cubePoint[2]+size/2]
+    //     ]);
+        setPts3D([
+    /*A-0*/    [pts3D[0][0] - (cubePoint[0] - cubePointX), pts3D[0][1] - (cubePoint[1] - cubePointY), pts3D[0][2] - (cubePoint[2] - cubePointZ)],
+    /*B-1*/    [pts3D[1][0] - (cubePoint[0] - cubePointX), pts3D[1][1] - (cubePoint[1] - cubePointY), pts3D[1][2] - (cubePoint[2] - cubePointZ)],
+    /*C-2*/    [pts3D[2][0] - (cubePoint[0] - cubePointX), pts3D[2][1] - (cubePoint[1] - cubePointY), pts3D[2][2] - (cubePoint[2] - cubePointZ)],
+    /*D-3*/    [pts3D[3][0] - (cubePoint[0] - cubePointX), pts3D[3][1] - (cubePoint[1] - cubePointY), pts3D[3][2] - (cubePoint[2] - cubePointZ)],
+    /*E-4*/    [pts3D[4][0] - (cubePoint[0] - cubePointX), pts3D[4][1] - (cubePoint[1] - cubePointY), pts3D[4][2] - (cubePoint[2] - cubePointZ)],
+    /*F-5*/    [pts3D[5][0] - (cubePoint[0] - cubePointX), pts3D[5][1] - (cubePoint[1] - cubePointY), pts3D[5][2] - (cubePoint[2] - cubePointZ)],
+    /*G-6*/    [pts3D[6][0] - (cubePoint[0] - cubePointX), pts3D[6][1] - (cubePoint[1] - cubePointY), pts3D[6][2] - (cubePoint[2] - cubePointZ)],
+    /*H-7*/    [pts3D[7][0] - (cubePoint[0] - cubePointX), pts3D[7][1] - (cubePoint[1] - cubePointY), pts3D[7][2] - (cubePoint[2] - cubePointZ)]
+        ]);
+        setCubePoint([cubePointX, cubePointY, cubePointZ]);
+        
+    }, [cubePoint, size, cubePointX, cubePointY, cubePointZ, pts3D]);
+    
+    
     
     // counterclockwise orientation of plains
     // const [planes, setPlanes] = useState([
@@ -203,6 +244,76 @@ function App() {
         return dotProduct <= 0;
     }
     
+    const rotateX = useCallback((points, angle1, angle2) => {
+        const angleDifference = angle2 - angle1;
+        const radians = (Math.PI / 180) * ((angleDifference) % 360); // Reduce the angle increment by dividing by 10
+        const centerY = cubePoint[1];
+        const centerZ = cubePoint[2];
+    
+        return points.map(([x, y, z]) => {
+            // Translate point to origin
+            const translatedY = y - centerY;
+            const translatedZ = z - centerZ;
+    
+            // Rotate around the X-axis
+            const rotatedY = translatedY * Math.cos(radians) - translatedZ * Math.sin(radians);
+            const rotatedZ = translatedY * Math.sin(radians) + translatedZ * Math.cos(radians);
+    
+            // Translate point back
+            return [x, rotatedY + centerY, rotatedZ + centerZ];
+        });
+    }, [cubePoint]);
+    
+    const rotateY = useCallback((points, angle1, angle2) => {
+        const angleDifference = angle2 - angle1;
+        const radians = (Math.PI / 180) * ((angleDifference) % 360);
+        const centerX = cubePoint[0];
+        const centerZ = cubePoint[2];
+        
+        return points.map(([x, y, z]) => {
+            const translatedX = x - centerX;
+            const translatedZ = z - centerZ;
+            
+            const rotatedX = translatedX * Math.cos(radians) + translatedZ * Math.sin(radians);
+            const rotatedZ = -translatedX * Math.sin(radians) + translatedZ * Math.cos(radians);
+            
+            return [rotatedX + centerX, y, rotatedZ + centerZ];
+        });
+    }, [cubePoint]);
+    
+    const rotateZ = useCallback((points, angle1, angle2) => {
+        const angleDifference = angle2 - angle1;
+        const radians = (Math.PI / 180) * ((angleDifference) % 360);
+        const centerX = cubePoint[0];
+        const centerY = cubePoint[1];
+        
+        return points.map(([x, y, z]) => {
+            const translatedX = x - centerX;
+            const translatedY = y - centerY;
+            
+            const rotatedX = translatedX * Math.cos(radians) - translatedY * Math.sin(radians);
+            const rotatedY = translatedX * Math.sin(radians) + translatedY * Math.cos(radians);
+            
+            return [rotatedX + centerX, rotatedY + centerY, z];
+        });
+    }, [cubePoint]);
+    
+    // Updates points when a certain angle is changed
+    useEffect(() => {
+        setPts3D(rotateX(pts3D, angleX, originalAngleX));
+        setOriginalAngleX(angleX);
+    }, [angleX]);
+    
+    useEffect(() => {
+        setPts3D(rotateY(pts3D, angleY, originalAngleY));
+        setOriginalAngleY(angleY);
+    }, [angleY]);
+    
+    useEffect( () => {
+        setPts3D(rotateZ(pts3D, angleZ, originalAngleZ));
+        setOriginalAngleZ(angleZ);
+    }, [angleZ]);
+    
     const constructPlanesHTML = useCallback((planes, colors, screenPosition, perspectivePoint) => {
         let result = [];
         
@@ -249,7 +360,18 @@ function App() {
                     {item}
                 </div>
             ))}
-            <SliderHolder setCoodinateX={setcubePointx} setCoodinateY={setCubePointy} setCoodinateZ={setCubePointz} />
+            <SliderHolder x={cubePointX}
+                          y={cubePointY}
+                          z={cubePointZ}
+                          setCoodinateX={setCubePointX}
+                          setCoodinateY={setCubePointY}
+                          setCoodinateZ={setCubePointZ}
+                          angleX={angleX}
+                          setAngleX={setAngleX}
+                          angleY={angleY}
+                          setAngleY={setAngleY}
+                          angleZ={angleZ}
+                          setAngleZ={setAngleZ}/>
         </div>
     );
 }
